@@ -1,90 +1,133 @@
 import numpy as np
 from sklearn.preprocessing import MinMaxScaler
-from typing import List, Dict, Any, Tuple
+from typing import List, Dict, Any
+import cv2
 
 from core.config import Config
 from core.utils.logger import logger
+from core.models.face_detector import FaceDetectorDNN
+from core.models.emotion_detector import SimpleEmotionClassifier
+
 
 class ImageScorer:
     """
-    Calculates a combined score for images based on various features.
-    Handles normalization and weighted aggregation.
+    Complete image scorer with:
+        - Blur / Contrast / Exposure
+        - Orientation check (front vs back)
+        - Emotion/smile scoring
     """
+
     def __init__(self, config: Config):
         self.config = config
-        self.quality_scalers: Dict[str, MinMaxScaler] = {}
+        self.quality_scalers = {}
         self.is_fitted = False
 
+        # Use real working model implementations (not placeholders)
+        self.face_detector = FaceDetectorDNN()
+        self.emotion_model = SimpleEmotionClassifier(self.face_detector)
+
+    # -------------------------
+    # SCALER FITTING
+    # -------------------------
     def fit_scalers(self, all_quality_features: List[Dict[str, Any]]):
-        """
-        Fits MinMaxScaler for numerical quality features based on the entire dataset.
-        This ensures scores are normalized consistently across all images.
-        """
         if not all_quality_features:
-            logger.warning("No quality features provided to fit scalers.")
+            logger.warning("No quality features to fit scalers.")
             return
 
         feature_names = all_quality_features[0].keys()
         for name in feature_names:
-            if name in ['blur_variance', 'contrast_std']: # Features where higher is generally better
-                values = np.array([f[name] for f in all_quality_features]).reshape(-1, 1)
+            if name in ['blur_variance', 'contrast_std']:
+                vals = np.array([f[name] for f in all_quality_features]).reshape(-1, 1)
                 scaler = MinMaxScaler()
-                scaler.fit(values)
+                scaler.fit(vals)
                 self.quality_scalers[name] = scaler
+
         self.is_fitted = True
-        logger.info("Quality feature scalers fitted.")
+        logger.info("Quality scalers fitted.")
 
-    def _score_blur(self, blur_variance: float) -> float:
-        """Scores blur. Higher variance is better, scaled to [0,1]."""
+    # -------------------------
+    # QUALITY SCORING
+    # -------------------------
+    def _score_blur(self, blur_var):
         if 'blur_variance' not in self.quality_scalers:
-            return 0.5 # Default if scaler not fitted
-        scaled_value = self.quality_scalers['blur_variance'].transform(np.array([[blur_variance]]))[0][0]
-        return scaled_value
+            return 0.5
+        return float(self.quality_scalers['blur_variance'].transform([[blur_var]])[0][0])
 
-    def _score_exposure_balance(self, mean_intensity: float) -> float:
-        """
-        Scores exposure balance. Closer to IDEAL_MEAN_INTENSITY is better.
-        Uses a non-linear scoring where deviations are penalized.
-        """
-        # Max possible deviation from ideal (e.g., if ideal is 128, max is 128)
-        max_deviation = max(self.config.IDEAL_MEAN_INTENSITY, 255 - self.config.IDEAL_MEAN_INTENSITY)
-        
-        # Current deviation
-        deviation = abs(mean_intensity - self.config.IDEAL_MEAN_INTENSITY)
-        
-        # Score: 1 - (normalized_deviation)
-        score = 1.0 - (deviation / max_deviation)
-        return max(0.0, score) # Ensure score is not negative
-
-    def _score_contrast(self, contrast_std: float) -> float:
-        """Scores contrast. Higher standard deviation is better, scaled to [0,1]."""
+    def _score_contrast(self, cstd):
         if 'contrast_std' not in self.quality_scalers:
-            return 0.5 # Default if scaler not fitted
-        scaled_value = self.quality_scalers['contrast_std'].transform(np.array([[contrast_std]]))[0][0]
-        return scaled_value
+            return 0.5
+        return float(self.quality_scalers['contrast_std'].transform([[cstd]])[0][0])
 
+    def _score_exposure_balance(self, mean):
+        max_dev = max(self.config.IDEAL_MEAN_INTENSITY, 255 - self.config.IDEAL_MEAN_INTENSITY)
+        dev = abs(mean - self.config.IDEAL_MEAN_INTENSITY)
+        return max(0.0, 1.0 - dev / max_dev)
+
+    # -------------------------
+    # ORIENTATION SCORING
+    # -------------------------
+    def _detect_face_orientation(self, image):
+        faces = self.face_detector.detect_faces(image)
+        if not faces:
+            return 0.0  # likely back facing
+
+        # pick highest confidence face
+        f = max(faces, key=lambda d: d["confidence"])
+        conf = f["confidence"]
+
+        if conf > 0.8:
+            return 1.0
+        if conf > 0.4:
+            return 0.5
+        return 0.0
+
+    # -------------------------
+    # EMOTION SCORING
+    # -------------------------
+    def _score_emotion(self, image):
+        result = self.emotion_model.predict(image)
+        label = result["dominant_emotion"]
+
+        if label in ("happy", "smile"):
+            return 1.0
+        if label in ("neutral", "calm"):
+            return 0.7
+        if label in ("sad", "fear", "disgust"):
+            return 0.3
+        if label in ("angry",):
+            return 0.1
+        return 0.5
+
+    # -------------------------
+    # FINAL SCORE
+    # -------------------------
     def calculate_single_image_score(self, image_data: Dict[str, Any]) -> float:
-        """
-        Calculates a combined quality score for a single image based on its features
-        and configured weights.
-        """
         if not self.is_fitted:
-            logger.warning("Scalers not fitted. Cannot calculate accurate scores.")
+            logger.warning("Scalers not fitted.")
+            return 0
+
+        quality = image_data["quality"]
+        # FIX: Load image from path
+        image_path = image_data["path"]
+        image = cv2.imread(image_path)
+        if image is None:
+            logger.error(f"Could not load image: {image_path}")
             return 0.0
 
-        quality = image_data['quality']
-        
-        blur_score = self._score_blur(quality['blur_variance'])
-        exposure_score = self._score_exposure_balance(quality['mean_intensity'])
-        contrast_score = self._score_contrast(quality['contrast_std'])
+        blur_s = self._score_blur(quality["blur_variance"])
+        exp_s = self._score_exposure_balance(quality["mean_intensity"])
+        con_s = self._score_contrast(quality["contrast_std"])
+        orient_s = self._detect_face_orientation(image)
+        emotion_s = self._score_emotion(image)
 
-        # Apply a penalty for severely blurry images, regardless of other scores
-        if quality['blur_variance'] < self.config.MIN_BLUR_VARIANCE:
-            blur_score *= 0.1 # Significant penalty to highly blurry images
+        if quality["blur_variance"] < self.config.MIN_BLUR_VARIANCE:
+            blur_s *= 0.1
 
-        total_score = (
-            self.config.WEIGHT_BLUR * blur_score +
-            self.config.WEIGHT_EXPOSURE_BALANCE * exposure_score +
-            self.config.WEIGHT_CONTRAST * contrast_score
+        score = (
+            self.config.WEIGHT_BLUR * blur_s +
+            self.config.WEIGHT_EXPOSURE_BALANCE * exp_s +
+            self.config.WEIGHT_CONTRAST * con_s +
+            self.config.WEIGHT_ORIENTATION * orient_s +
+            self.config.WEIGHT_EMOTION * emotion_s
         )
-        return total_score
+        return float(round(score, 4))

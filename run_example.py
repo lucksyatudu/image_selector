@@ -159,7 +159,7 @@ if __name__ == "__main__":
     setup_logging()
     
     # Define a temporary directory for example images
-    EXAMPLE_IMAGE_DIR = "images"
+    EXAMPLE_IMAGE_DIR = "img"
     OUTPUT_FILE = "example_scores.json"
 
     # Clean up previous run's directory

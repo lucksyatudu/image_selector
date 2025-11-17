@@ -13,9 +13,13 @@ class Config:
     DBSCAN_MIN_SAMPLES: int = 3 # The number of samples (or total weight) in a neighborhood for a point to be considered as a core point.
     
     # Scoring weights (adjust these based on desired outcome) - ideally sum to 1.0
-    WEIGHT_BLUR: float = 0.4
-    WEIGHT_EXPOSURE_BALANCE: float = 0.3 # Penalizes too dark/bright
-    WEIGHT_CONTRAST: float = 0.3
+    WEIGHT_BLUR = 0.25
+    WEIGHT_CONTRAST = 0.20
+    WEIGHT_EXPOSURE_BALANCE = 0.20
+    WEIGHT_ORIENTATION = 0.20
+    WEIGHT_EMOTION = 0.15
+    IDEAL_MEAN_INTENSITY = 128
+    MIN_BLUR_VARIANCE = 50
     # Add more weights for other features if implemented (e.g., face detection, composition)
 
     # Blur threshold for filtering (if you want to discard very blurry images)

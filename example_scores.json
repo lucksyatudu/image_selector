@@ -1,0 +1,122 @@
+[
+    {
+        "rank": 1,
+        "path": "img/GOPR0260.JPG",
+        "score": 0.631,
+        "cluster_id": -1,
+        "quality_features": {
+            "blur_variance": 47.52970765391306,
+            "mean_intensity": 103.04213776514568,
+            "clipped_percent": 7.699143807068842,
+            "contrast_std": 60.36643082792675
+        }
+    },
+    {
+        "rank": 2,
+        "path": "img/GOPR0259.JPG",
+        "score": 0.6301,
+        "cluster_id": -1,
+        "quality_features": {
+            "blur_variance": 47.111774063480716,
+            "mean_intensity": 103.17565791477506,
+            "clipped_percent": 7.449978599184365,
+            "contrast_std": 60.21175230835164
+        }
+    },
+    {
+        "rank": 3,
+        "path": "img/GOPR0257.JPG",
+        "score": 0.4549,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 42.94605839927832,
+            "mean_intensity": 102.69044341367857,
+            "clipped_percent": 1.015065933748846,
+            "contrast_std": 54.76840561970109
+        }
+    },
+    {
+        "rank": 4,
+        "path": "img/GOPR0265.JPG",
+        "score": 0.4505,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 36.64930700952701,
+            "mean_intensity": 102.19697967964503,
+            "clipped_percent": 1.2722664666051093,
+            "contrast_std": 54.76839462277468
+        }
+    },
+    {
+        "rank": 5,
+        "path": "img/GOPR0264.JPG",
+        "score": 0.4481,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 36.5107767082811,
+            "mean_intensity": 102.72153190565045,
+            "clipped_percent": 1.09711241279368,
+            "contrast_std": 54.241347399036314
+        }
+    },
+    {
+        "rank": 6,
+        "path": "img/GOPR0262.JPG",
+        "score": 0.4467,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 36.35296285753466,
+            "mean_intensity": 103.52081650123115,
+            "clipped_percent": 0.9175499512670566,
+            "contrast_std": 53.798168403799906
+        }
+    },
+    {
+        "rank": 7,
+        "path": "img/GOPR0263.JPG",
+        "score": 0.4451,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 36.58307333134626,
+            "mean_intensity": 103.05425056668078,
+            "clipped_percent": 1.0544610681491742,
+            "contrast_std": 53.63963496649702
+        }
+    },
+    {
+        "rank": 8,
+        "path": "img/GOPR0266.JPG",
+        "score": 0.4351,
+        "cluster_id": 0,
+        "quality_features": {
+            "blur_variance": 35.61282054685328,
+            "mean_intensity": 103.61336621203961,
+            "clipped_percent": 0.30373929157689544,
+            "contrast_std": 51.87245194741838
+        }
+    },
+    {
+        "rank": 9,
+        "path": "img/GOPR0258.JPG",
+        "score": 0.4341,
+        "cluster_id": -1,
+        "quality_features": {
+            "blur_variance": 42.49495807188963,
+            "mean_intensity": 103.54675477069868,
+            "clipped_percent": 1.0044757361239356,
+            "contrast_std": 51.04540896789341
+        }
+    },
+    {
+        "rank": 10,
+        "path": "img/GOPR0267.JPG",
+        "score": 0.2549,
+        "cluster_id": -1,
+        "quality_features": {
+            "blur_variance": 4.608957903799872,
+            "mean_intensity": 160.04572360405766,
+            "clipped_percent": 0.8438994850979789,
+            "contrast_std": 26.310944278984245
+        }
+    }
+]
