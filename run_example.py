@@ -36,7 +36,7 @@ class ExamplePhotoProcessor:
         self.dl_extractor = DeepLearningFeatureExtractor()
         self.quality_extractor = QualityFeatureExtractor()
         self.phash_extractor = PerceptualHashExtractor()
-        self.similarity_analyzer = SimilarityAnalyzer(config)
+        self.similarity_analyzer = SimilarityAnalyzer()
         self.scorer = ImageScorer(config)
 
     def _get_image_paths(self) -> List[str]:

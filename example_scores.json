@@ -3,7 +3,7 @@
         "rank": 1,
         "path": "img/GOPR0260.JPG",
         "score": 0.631,
-        "cluster_id": -1,
+        "cluster_id": 0,
         "quality_features": {
             "blur_variance": 47.52970765391306,
             "mean_intensity": 103.04213776514568,
@@ -15,7 +15,7 @@
         "rank": 2,
         "path": "img/GOPR0259.JPG",
         "score": 0.6301,
-        "cluster_id": -1,
+        "cluster_id": 0,
         "quality_features": {
             "blur_variance": 47.111774063480716,
             "mean_intensity": 103.17565791477506,
@@ -27,7 +27,7 @@
         "rank": 3,
         "path": "img/GOPR0257.JPG",
         "score": 0.4549,
-        "cluster_id": 0,
+        "cluster_id": 1,
         "quality_features": {
             "blur_variance": 42.94605839927832,
             "mean_intensity": 102.69044341367857,
@@ -39,7 +39,7 @@
         "rank": 4,
         "path": "img/GOPR0265.JPG",
         "score": 0.4505,
-        "cluster_id": 0,
+        "cluster_id": 3,
         "quality_features": {
             "blur_variance": 36.64930700952701,
             "mean_intensity": 102.19697967964503,
@@ -51,7 +51,7 @@
         "rank": 5,
         "path": "img/GOPR0264.JPG",
         "score": 0.4481,
-        "cluster_id": 0,
+        "cluster_id": 3,
         "quality_features": {
             "blur_variance": 36.5107767082811,
             "mean_intensity": 102.72153190565045,
@@ -63,7 +63,7 @@
         "rank": 6,
         "path": "img/GOPR0262.JPG",
         "score": 0.4467,
-        "cluster_id": 0,
+        "cluster_id": 2,
         "quality_features": {
             "blur_variance": 36.35296285753466,
             "mean_intensity": 103.52081650123115,
@@ -75,7 +75,7 @@
         "rank": 7,
         "path": "img/GOPR0263.JPG",
         "score": 0.4451,
-        "cluster_id": 0,
+        "cluster_id": 2,
         "quality_features": {
             "blur_variance": 36.58307333134626,
             "mean_intensity": 103.05425056668078,
@@ -87,7 +87,7 @@
         "rank": 8,
         "path": "img/GOPR0266.JPG",
         "score": 0.4351,
-        "cluster_id": 0,
+        "cluster_id": 1,
         "quality_features": {
             "blur_variance": 35.61282054685328,
             "mean_intensity": 103.61336621203961,
