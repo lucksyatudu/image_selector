@@ -2,17 +2,7 @@ import os
 import json
 from PIL import Image, ImageFilter
 import time
-import shutil
-
-# --- IMPORTANT: Setup for running this example ---
-# To run this example, you need to ensure Python can find the 'core' package.
-# The easiest way is to run it from the parent directory of 'photo_album_tool'
-# using: `python -m photo_album_tool.run_example`
-# Or, if running directly from `photo_album_tool/` directory:
-# import sys
-# sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
-# This example assumes you are running from the parent directory
-# or have correctly set up your PYTHONPATH.
+from datetime import datetime
 
 # Import modules from our core package
 from core.config import Config
@@ -26,8 +16,7 @@ from core.scoring.image_scorer import ImageScorer
 from typing import List, Dict, Any
 from tqdm import tqdm
 
-# --- Main Example Class (similar to PhotoAlbumTool but for direct usage) ---
-class ExamplePhotoProcessor:
+class StandaloneImageProcessor:
     def __init__(self, image_dir: str, config: Config):
         self.image_dir = image_dir
         self.config = config
@@ -115,70 +104,26 @@ class ExamplePhotoProcessor:
         logger.info(f"Selected {len(selected_images)} unique candidates before final trimming.")
         return selected_images[:num_best]
 
-# --- Dummy Image Generation (for example usage) ---
-def create_example_images(image_dir: str):
-    """Generates a small set of dummy images for demonstration purposes."""
-    logger.info(f"Creating example images in '{image_dir}'...")
-    os.makedirs(image_dir, exist_ok=True)
-    
-    # Scene 1: Clear vs Blurred
-    img1 = Image.new('RGB', (800, 600), color = 'white')
-    img1.save(os.path.join(image_dir, 'scene1_clear_01.jpg'))
-    img1.save(os.path.join(image_dir, 'scene1_clear_02.jpg')) # Another clear shot of same scene
-
-    img1_blur = img1.filter(ImageFilter.GaussianBlur(radius=5))
-    img1_blur.save(os.path.join(image_dir, 'scene1_blurred_01.jpg'))
-    img1_blur_heavy = img1.filter(ImageFilter.GaussianBlur(radius=15))
-    img1_blur_heavy.save(os.path.join(image_dir, 'scene1_blurred_02_heavy.jpg'))
-
-    # Scene 2: Dark vs Bright
-    img2_dark = Image.new('RGB', (800, 600), color = 'darkblue')
-    img2_dark.save(os.path.join(image_dir, 'scene2_dark_01.jpg'))
-    img2_dark_similar = Image.new('RGB', (800, 600), color = (0, 0, 100)) # Slightly less dark blue
-    img2_dark_similar.save(os.path.join(image_dir, 'scene2_dark_02_similar.jpg'))
-
-    img2_bright = Image.new('RGB', (800, 600), color = 'yellow')
-    img2_bright.save(os.path.join(image_dir, 'scene2_bright_01.jpg'))
-
-    # Scene 3: Colorful/Good Contrast
-    img3 = Image.new('RGB', (800, 600), color = (50, 200, 100)) # Greenish, good contrast
-    img3.save(os.path.join(image_dir, 'scene3_colorful_01.jpg'))
-    img3_similar = Image.new('RGB', (800, 600), color = (60, 190, 110)) # Very similar colorful
-    img3_similar.save(os.path.join(image_dir, 'scene3_colorful_02_similar.jpg'))
-
-    # Scene 4: Low Contrast
-    img4 = Image.new('RGB', (800, 600), color = (120, 120, 120)) # Low contrast gray
-    img4.save(os.path.join(image_dir, 'scene4_low_contrast_01.jpg'))
-
-    logger.info(f"Example images generation complete in '{image_dir}'.")
-
-
-# --- Main execution block for the example ---
 if __name__ == "__main__":
+    # Ensure runs folder is present
+    os.makedirs("runs", exist_ok=True)
+
     # Ensure logging is set up for the example
     setup_logging()
     
-    # Define a temporary directory for example images
-    EXAMPLE_IMAGE_DIR = "img"
-    OUTPUT_FILE = "example_scores.json"
-
-    # Clean up previous run's directory
-    # if os.path.exists(EXAMPLE_IMAGE_DIR):
-    #     shutil.rmtree(EXAMPLE_IMAGE_DIR)
-    #     logger.info(f"Cleaned up previous example directory: {EXAMPLE_IMAGE_DIR}")
-    
-    # Generate fresh example images
-    # create_example_images(EXAMPLE_IMAGE_DIR)
-
-    # Instantiate the processor with example directory and default config
-    # You can modify Config attributes here for specific example tests
-    # e.g., Config.WEIGHT_BLUR = 0.6
-    # Config.DBSCAN_EPS = 0.8
+    # Get run configuration
+    with open("standalone_run_config.json", 'r') as f:
+        run_config = json.load(f)
+    IMAGE_DIR = run_config.get("image_directory", None)
+    if IMAGE_DIR is None or not os.path.isdir(IMAGE_DIR):
+        logger.error("Please provide a valid 'image_directory' in 'standalone_run_config.json'.")
+        exit(1)
+    OUTPUT_FILE = "runs/"+datetime.strftime(datetime.now(),'%Y%m%d-%H%M')+"-run_scores.json"
     
     start_time = time.time()
-    logger.info(f"Starting photo album processing for '{EXAMPLE_IMAGE_DIR}'...")
+    logger.info(f"Starting photo album processing for '{IMAGE_DIR}'...")
 
-    processor = ExamplePhotoProcessor(EXAMPLE_IMAGE_DIR, Config)
+    processor = StandaloneImageProcessor(IMAGE_DIR, Config)
     processor.process_all_images()
     
     num_to_recommend = 3
@@ -218,6 +163,17 @@ if __name__ == "__main__":
     end_time = time.time()
     logger.info(f"Processing finished in {end_time - start_time:.2f} seconds.")
 
-    # Optional: Keep the example directory for inspection, or uncomment to clean up
-    # shutil.rmtree(EXAMPLE_IMAGE_DIR)
-    # logger.info(f"Cleaned up example directory: {EXAMPLE_IMAGE_DIR}")
+    # Clean up image directory after processing
+    if run_config.get("clean_directory_after_processing", False):
+        paths_to_retain = [top['path'] for top in top_images]
+        for file in os.listdir(IMAGE_DIR):
+            if not file.is_file():
+                continue 
+            full_path = os.path.join(IMAGE_DIR, file)
+            if full_path not in paths_to_retain:
+                try:
+                    os.remove(full_path)
+                    logger.info(f"Removed file: {full_path}")
+                except Exception as e:
+                    logger.error(f"Could not remove file '{full_path}': {e}")
+    
