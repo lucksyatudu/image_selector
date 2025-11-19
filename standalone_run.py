@@ -95,8 +95,12 @@ class StandaloneImageProcessor:
         selected_images: List[Dict[str, Any]] = []
 
         for cluster_id, img_list in clusters.items():
-            best_in_cluster = max(img_list, key=lambda x: x['final_score'])
-            selected_images.append(best_in_cluster)
+            # Sort each cluster by score (high → low)
+            sorted_cluster = sorted(img_list, key=lambda x: x["final_score"], reverse=True)
+
+            for rank, img in enumerate(sorted_cluster, start=1):
+                img['final_score'] = img['final_score']/rank  # Penalize by rank within cluster
+                selected_images.append(img)
         
         selected_images.extend(noise_images)
         selected_images.sort(key=lambda x: x['final_score'], reverse=True)
@@ -118,6 +122,7 @@ if __name__ == "__main__":
     if IMAGE_DIR is None or not os.path.isdir(IMAGE_DIR):
         logger.error("Please provide a valid 'image_directory' in 'standalone_run_config.json'.")
         exit(1)
+        
     OUTPUT_FILE = "runs/"+datetime.strftime(datetime.now(),'%Y%m%d-%H%M')+"-run_scores.json"
     
     start_time = time.time()
@@ -126,7 +131,11 @@ if __name__ == "__main__":
     processor = StandaloneImageProcessor(IMAGE_DIR, Config)
     processor.process_all_images()
     
-    num_to_recommend = 3
+    num_to_recommend = run_config.get("selection",None)
+    if num_to_recommend is None or not isinstance(num_to_recommend, int):
+        logger.error("Please provide a valid integer 'selection' in 'standalone_run_config.json'.")
+        exit(1)
+
     top_images = processor.get_ranked_images(num_best=num_to_recommend)
 
     logger.info(f"\n--- Top {len(top_images)} Recommended Images for Album ---")

@@ -69,7 +69,7 @@ class SimilarityAnalyzer:
             min_cluster_size=2,         # allow tiny clusters (required for 600+ clusters)
             min_samples=1,              # very sensitive to local variations
             cluster_selection_method='leaf',
-            cluster_selection_epsilon=0.05,   # controls cluster splitting (tuneable)
+            cluster_selection_epsilon=0.3,   # controls cluster splitting (tuneable)
             allow_single_cluster=False,
             core_dist_n_jobs=-1,
         )
