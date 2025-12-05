@@ -41,3 +41,8 @@ Create a virtual environment and install dependencies by running env_setup.sh
 - Run standalone_run.py.
 - The scores of images will be provided inside runs folder.
 - Basis your inputs to configs, the images folder can be cleaned for best images basis the scores.
+
+## Future Scope
+
+- Addition of more scoring features, as industry grade systems may have 30+ features.
+- Different pipelines for scoring of images and pictures with faces and without faces.
